@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "centralized-monitoring.fullname" . }}-alertmanager
+  name: {{ include "prometheus.fullname" . }}-alertmanager
   labels:
-    {{- include "centralized-monitoring.labels" . | nindent 4 }}
+    {{- include "prometheus.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "centralized-monitoring.selectorLabels" . | nindent 6 }}
+      {{- include "prometheus.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "centralized-monitoring.selectorLabels" . | nindent 8 }}
+        {{- include "prometheus.selectorLabels" . | nindent 8 }}
     spec:
       securityContext:
         fsGroup: {{ .Values.securityContext.fsGroup }}
@@ -32,7 +32,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: {{ include "centralized-monitoring.fullname" . }}-alertmanager-config
+            name: {{ include "prometheus.fullname" . }}-alertmanager-config
         - name: data
           emptyDir: {}  # or use `hostPath` if needed
 

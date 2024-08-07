@@ -9,7 +9,7 @@ Expand the name of the chart.
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "centralized-monitoring.fullname" -}}
+{{- define "prometheus.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -20,8 +20,8 @@ Expand the name of the chart.
 {{/*
 Common labels for the chart.
 */}}
-{{- define "centralized-monitoring.labels" -}}
-app.kubernetes.io/name: {{ include "centralized-monitoring.name" . }}
+{{- define "prometheus.labels" -}}
+app.kubernetes.io/name: {{ include "prometheus.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
@@ -30,14 +30,14 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels for the chart.
 */}}
-{{- define "centralized-monitoring.selectorLabels" -}}
-app: {{ include "centralized-monitoring.fullname" . }}
+{{- define "prometheus.selectorLabels" -}}
+app: {{ include "prometheus.fullname" . }}
 {{- end }}
 
 {{/*
 Chart name and version.
 */}}
-{{- define "centralized-monitoring.name" -}}
+{{- define "prometheus.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 

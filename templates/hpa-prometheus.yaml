@@ -1,14 +1,14 @@
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "centralized-monitoring.fullname" . }}-prometheus
+  name: {{ include "prometheus.fullname" . }}-prometheus
   labels:
-    {{- include "centralized-monitoring.labels" . | nindent 4 }}
+    {{- include "prometheus.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "centralized-monitoring.fullname" . }}-prometheus
+    name: {{ include "prometheus.fullname" . }}-prometheus
   minReplicas: {{ .Values.hpa.prometheus.minReplicas }}
   maxReplicas: {{ .Values.hpa.prometheus.maxReplicas }}
   metrics:

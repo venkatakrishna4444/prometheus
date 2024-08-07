@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ include "centralized-monitoring.fullname" . }}-node-exporter
+  name: {{ include "prometheus.fullname" . }}-node-exporter
   labels:
-    {{- include "centralized-monitoring.labels" . | nindent 4 }}
+    {{- include "prometheus.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "centralized-monitoring.selectorLabels" . | nindent 6 }}
+      {{- include "prometheus.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "centralized-monitoring.selectorLabels" . | nindent 8 }}
+        {{- include "prometheus.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: node-exporter
