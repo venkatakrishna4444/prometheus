@@ -1,0 +1,21 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "centralized-monitoring.fullname" . }}-alertmanager
+  labels:
+    {{- include "centralized-monitoring.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "centralized-monitoring.fullname" . }}-alertmanager
+  minReplicas: {{ .Values.hpa.alertmanager.minReplicas }}
+  maxReplicas: {{ .Values.hpa.alertmanager.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.alertmanager.cpu }}
+

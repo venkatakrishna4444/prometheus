@@ -1,28 +1,26 @@
-{{- if .Values.nodeExporter.enabled }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: node-exporter
+  name: {{ include "centralized-monitoring.fullname" . }}-node-exporter
   labels:
-    app: node-exporter
+    {{- include "centralized-monitoring.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: node-exporter
+      {{- include "centralized-monitoring.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: node-exporter
+        {{- include "centralized-monitoring.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: node-exporter
-          image: "{{ .Values.nodeExporter.image.repository }}:{{ .Values.nodeExporter.image.tag }}"
-          imagePullPolicy: {{ .Values.nodeExporter.image.pullPolicy }}
+          image: "{{ .Values.image.nodeExporter.repository }}:{{ .Values.image.nodeExporter.tag }}"
+          imagePullPolicy: {{ .Values.image.nodeExporter.pullPolicy }}
           ports:
             - containerPort: 9100
-              hostPort: 9100
           resources:
-            {{- toYaml .Values.nodeExporterResources | nindent 12 }}
+            {{- toYaml .Values.resources.nodeExporter | nindent 12 }}
           volumeMounts:
             - name: proc
               mountPath: /host/proc
@@ -43,5 +41,4 @@ spec:
         - name: root
           hostPath:
             path: /
-{{- end }}
 

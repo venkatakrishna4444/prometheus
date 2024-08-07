@@ -1,210 +1,97 @@
-# Default values for ..
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 1
+replicaCount: 2
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-podAnnotations: {}
-podLabels: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  prometheus:
+    repository: prom/prometheus
+    tag: "v2.29.2"
+    pullPolicy: IfNotPresent
+  alertmanager:
+    repository: prom/alertmanager
+    tag: "v0.23.0"
+    pullPolicy: IfNotPresent
+  nodeExporter:
+    repository: prom/node-exporter
+    tag: "v1.1.2"
+    pullPolicy: IfNotPresent
 
 service:
-  type: ClusterIP
-  port: 80
+  type: LoadBalancer
+  port: 9090
 
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+resources:
+  prometheus:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  alertmanager:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  nodeExporter:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+storage:
+  prometheus:
+    type: pvc
+    size: 50Gi
+  alertmanager:
+    type: pvc
+    size: 10Gi
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
-# Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
+securityContext:
+  fsGroup: 2000
+  runAsUser: 1000
 
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
-------------------------------------------------------
 
-
-replicaCount: 1
-
-image:
-  repository: prom/prometheus
-  tag: v2.26.0
-  pullPolicy: IfNotPresent
-
-nodeExporter:
-  image:
-    repository: prom/node-exporter
-    tag: v1.1.2
-    pullPolicy: IfNotPresent
-  enabled: true
+hpa:
+  prometheus:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    cpu: 80
+  alertmanager:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    cpu: 80
 
 alertmanager:
-  image:
-    repository: prom/alertmanager
-    tag: v0.21.0
-    pullPolicy: IfNotPresent
   enabled: true
+  config: |-
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: 'default'
+    receivers:
+      - name: 'default'
+        email_configs:
+          - to: 'alert@example.com'
 
-service:
-  type: ClusterIP
-  port: 9090
-
-resources:
-  limits:
-    cpu: 1
-    memory: 1Gi
-  requests:
-    cpu: 500m
-    memory: 512Mi
-
-nodeExporterResources:
-  limits:
-    cpu: 200m
-    memory: 256Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-
-alertmanagerResources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 250m
-    memory: 256Mi
-
-# Scrape configurations for various resources
 scrapeConfigs:
-  - job_name: 'kubernetes-nodes'
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: 'node-exporter'
     kubernetes_sd_configs:
-      - role: node
+      - role: endpoints
     relabel_configs:
-      - source_labels: [__meta_kubernetes_node_label_name]
-        target_label: instance
-      - action: labelmap
-        regex: __meta_kubernetes_node_label_(.+)
-  - job_name: 'kubernetes-pods'
-    kubernetes_sd_configs:
-      - role: pod
-    relabel_configs:
-      - action: labelmap
-        regex: __meta_kubernetes_pod_label_(.+)
-      - source_labels: [__meta_kubernetes_namespace]
-        action: replace
-        target_label: kubernetes_namespace
-      - source_labels: [__meta_kubernetes_pod_name]
-        action: replace
-        target_label: kubernetes_pod_name
-  - job_name: 'eks'
-    kubernetes_sd_configs:
-      - role: endpoint
-        namespaces:
-          names:
-            - default
-    relabel_configs:
-      - source_labels: [__meta_kubernetes_service_name]
-        action: replace
-        target_label: job
-  - job_name: 'ebs'
-    ec2_sd_configs:
-      - region: us-west-2
-        access_key: YOUR_ACCESS_KEY
-        secret_key: YOUR_SECRET_KEY
-    relabel_configs:
-      - source_labels: [__meta_ec2_tag_Name]
-        target_label: instance
-
-externalLabels:
-  region: "us-west-2"
-  environment: "production"
-
-# Add AWS specific scraping configurations if needed
-aws:
-  region: us-west-2
-  accessKeyId: YOUR_ACCESS_KEY
-  secretAccessKey: YOUR_SECRET_KEY
+      - source_labels: [__meta_kubernetes_service_label_app]
+        action: keep
+        regex: node-exporter
 

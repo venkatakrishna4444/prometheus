@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "centralized-monitoring.fullname" . }}-prometheus
+  labels:
+    {{- include "centralized-monitoring.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "centralized-monitoring.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "centralized-monitoring.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      containers:
+        - name: prometheus
+          image: "{{ .Values.image.prometheus.repository }}:{{ .Values.image.prometheus.tag }}"
+          imagePullPolicy: {{ .Values.image.prometheus.pullPolicy }}
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus
+            - name: data
+              mountPath: /prometheus
+          resources:
+            {{- toYaml .Values.resources.prometheus | nindent 12 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "centralized-monitoring.fullname" . }}-prometheus-config
+        - name: data
+          emptyDir: {}  # or use `hostPath` if needed
+

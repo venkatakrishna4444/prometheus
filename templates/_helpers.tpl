@@ -1,16 +1,54 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "..name" -}}
+{{- define "prometheus.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
+
+
+{{/*
+Expand the name of the chart.
+*/}}
+{{- define "centralized-monitoring.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Common labels for the chart.
+*/}}
+{{- define "centralized-monitoring.labels" -}}
+app.kubernetes.io/name: {{ include "centralized-monitoring.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels for the chart.
+*/}}
+{{- define "centralized-monitoring.selectorLabels" -}}
+app: {{ include "centralized-monitoring.fullname" . }}
+{{- end }}
+
+{{/*
+Chart name and version.
+*/}}
+{{- define "centralized-monitoring.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+
 
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "..fullname" -}}
+{{- define "prometheus.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +64,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "..chart" -}}
+{{- define "prometheus.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "..labels" -}}
-helm.sh/chart: {{ include "..chart" . }}
-{{ include "..selectorLabels" . }}
+{{- define "prometheus.labels" -}}
+helm.sh/chart: {{ include "prometheus.chart" . }}
+{{ include "prometheus.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +83,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "..selectorLabels" -}}
-app.kubernetes.io/name: {{ include "..name" . }}
+{{- define "prometheus.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "prometheus.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "..serviceAccountName" -}}
+{{- define "prometheus.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "..fullname" .) .Values.serviceAccount.name }}
+{{- default (include "prometheus.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
