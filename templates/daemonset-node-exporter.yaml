@@ -3,15 +3,15 @@ kind: DaemonSet
 metadata:
   name: {{ include "prometheus.fullname" . }}-node-exporter
   labels:
-    {{- include "prometheus.labels" . | nindent 4 }}
+    {{- include "node-exporter.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "prometheus.selectorLabels" . | nindent 6 }}
+      {{- include "node-exporter.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "prometheus.selectorLabels" . | nindent 8 }}
+        {{- include "node-exporter.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: node-exporter

@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "prometheus.fullname" . }}-alertmanager
   labels:
-    {{- include "prometheus.labels" . | nindent 4 }}
+    {{- include "alertmanager.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,5 +12,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "prometheus.selectorLabels" . | nindent 4 }}
+    {{- include "alertmanager.selectorLabels" . | nindent 4 }}
 

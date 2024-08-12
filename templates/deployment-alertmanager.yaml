@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: {{ include "prometheus.fullname" . }}-alertmanager
   labels:
-    {{- include "prometheus.labels" . | nindent 4 }}
+    {{- include "alertmanager.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "prometheus.selectorLabels" . | nindent 6 }}
+      {{- include "alertmanager.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "prometheus.selectorLabels" . | nindent 8 }}
+        {{- include "alertmanager.selectorLabels" . | nindent 8 }}
     spec:
       securityContext:
         fsGroup: {{ .Values.securityContext.fsGroup }}

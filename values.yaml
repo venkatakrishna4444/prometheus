@@ -16,7 +16,7 @@ image:
 
 service:
   type: LoadBalancer
-  port: 9090
+  port: 80
 
 resources:
   prometheus:
@@ -72,16 +72,19 @@ hpa:
     cpu: 80
 
 alertmanager:
-  enabled: true
-  config: |-
+  config: |
     global:
       resolve_timeout: 5m
     route:
-      receiver: 'default'
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'null'
     receivers:
-      - name: 'default'
-        email_configs:
-          - to: 'alert@example.com'
+    - name: 'null'
+
+
 
 scrapeConfigs:
   - job_name: 'prometheus'
@@ -91,7 +94,18 @@ scrapeConfigs:
     kubernetes_sd_configs:
       - role: endpoints
     relabel_configs:
-      - source_labels: [__meta_kubernetes_service_label_app]
-        action: keep
+      - action: keep
         regex: node-exporter
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: prometheus.local
+      paths: []
+  tls: []
+
+namespace: prometheus
+serviceAccount:
+  name: prometheus
 
