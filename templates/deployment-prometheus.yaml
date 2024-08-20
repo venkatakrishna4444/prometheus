@@ -26,6 +26,8 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /etc/prometheus
+            - name: alert-rules
+              mountPath: /etc/prometheus/rules
             - name: data
               mountPath: /prometheus
           resources:
@@ -34,6 +36,9 @@ spec:
         - name: config-volume
           configMap:
             name: {{ include "prometheus.fullname" . }}-prometheus-config
+        - name: alert-rules
+          configMap:
+            name: alert-rules
         - name: data
           emptyDir: {}  # or use `hostPath` if needed
 

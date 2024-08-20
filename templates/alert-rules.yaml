@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alert-rules
+  labels:
+    app: prometheus
+data:
+  alert.rules: |-
+    groups:
+    - name: Fortify
+      rules:
+      - alert: NodeStatusAlert
+        expr: up{job="atlantis-servers"} == 1
+        for: 5m
+        labels:
+          severity: critical
+          app: Fortify-app
+          landingzone: SaaS_LZ
+          subcategory: Fortify
+        annotations:
+          description: "Instance {{ `{{` }} $labels.instance {{ `}}` }} is down\nLanding Zone: {{ `{{` }} $labels.landingzone {{ `}}` }} has reached {{ `{{` }} $value {{ `}}` }}%"
+          title: "Instance {{ `{{` }} $labels.instance {{ `}}` }} in region {{ `{{` }} $labels.region {{ `}}` }} is down"

@@ -13,7 +13,9 @@ data:
       evaluation_interval: 15s
       external_labels:
         monitor: 'prometheus'
-    
+    rule_files:
+      - /etc/prometheus/rules/alert.rules
+
     alerting:
       alertmanagers:
         - static_configs:
